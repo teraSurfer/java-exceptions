@@ -1,16 +1,14 @@
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class Student {
     private int id;
     private String name;
-    private List<Course> courseList;
+    private double gpa;
 
-    public Student(int id, String name) {
-        this.courseList = new ArrayList<>();
+    public Student(int id, String name, double gpa) {
         this.id = id;
         this.name = name;
+        this.gpa = gpa;
     }
 
     public int getId() {
@@ -29,16 +27,14 @@ public class Student {
         this.name = name;
     }
 
-    public List<Course> getCourseList() {
-        return this.courseList;
+
+
+    public double getGpa() {
+        return gpa;
     }
 
-    public void addCourse(Course course) {
-        this.courseList.add(course);
-    }
-
-    public void removeCourse(Course course) {
-        this.courseList.remove(course);
+    public void setGpa(double gpa) {
+        this.gpa = gpa;
     }
 
     @Override

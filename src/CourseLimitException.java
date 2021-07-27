@@ -1,4 +1,4 @@
-public class CourseLimitException extends RuntimeException {
+public class CourseLimitException extends Exception {
 
     public CourseLimitException(String message) {
         super(message);

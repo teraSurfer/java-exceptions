@@ -1,55 +1,75 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class JavaUniversity {
     private final int STUDENT_LIMIT = 5;
-    private final int COURSES_PER_STUDENT_LIMIT = 3;
+    private final int COURSE_LIMIT = 5;
+    private final double MIN_GRADUATION_GPA = 7.0d;
     private static JavaUniversity _instance;
-    private Map<Integer, Student> students;
-    private Map<Integer, Course> courses;
-    private Map<Integer, List<Integer>> courseStudentMap;
+    private Student[] students;
+    private Course[] courses;
+    private int courseCount = 0;
+    private int studentCount = 0;
 
     private JavaUniversity() {
-        this.students = new HashMap<>();
-        this.courses = new HashMap<>();
-        this.courseStudentMap = new HashMap<>();
+        this.students = new Student[STUDENT_LIMIT];
+        this.courses = new Course[COURSE_LIMIT];
     }
 
     static JavaUniversity getInstance() {
-        if(_instance == null) {
+        if (_instance == null) {
             _instance = new JavaUniversity();
         }
         return _instance;
     }
 
-    public void addCourse(Course course) {
-        this.courses.put(course.getId(), course);
-        this.courseStudentMap.put(course.getId(), new ArrayList<>());
+    public void addCourse(Course course) throws CourseLimitException {
+        if (courseCount < COURSE_LIMIT) {
+            this.courses[courseCount] = course;
+            ++courseCount;
+        } else {
+            throw new CourseLimitException("University course limit reached");
+        }
     }
 
     public void addStudent(Student student) throws StudentLimitException {
-        if(this.students.size() < STUDENT_LIMIT) {
-            this.students.put(student.getId(), student);
+        if (studentCount < STUDENT_LIMIT) {
+            this.students[studentCount] = student;
+            ++studentCount;
         } else {
             throw new StudentLimitException("University student limit reached.");
         }
     }
 
-    public void registerStudentForCourse(Student student, Course course) throws CourseLimitException, InvalidEntityException {
-        if(!students.containsKey(student.getId())) {
-            throw new InvalidEntityException("Student with id: " + student.getId() + " is not registered.");
+    private int hasStudent(Student student) {
+        for (int i = 0; i < students.length; ++i) {
+            if (students[i].equals(student)) {
+                return i;
+            }
         }
-        if(!courses.containsKey(course.getId())) {
-            throw new InvalidEntityException("Course with id: " + course.getId() + " is not available.");
-        }
+        return -1;
+    }
 
-        if(student.getCourseList().size() < COURSES_PER_STUDENT_LIMIT) {
-            student.addCourse(course);
-            this.courseStudentMap.get(course.getId()).add(student.getId());
+    public Student graduateStudent(Student student) throws StudentNotFoundException, IneligibleForGraduationException {
+        int studentIndex = hasStudent(student);
+        if (studentIndex >= 0) {
+            if (student.getGpa() >= MIN_GRADUATION_GPA) {
+                // remove student from students array.
+                // copy all elements of students to new array except the current student.
+                Student[] remainingStudents = new Student[students.length - 1];
+                int j = 0;
+                for (int i = 0; i < students.length; ++i) {
+                    if (i != studentIndex) {
+                        remainingStudents[j] = students[i];
+                        ++j;
+                    }
+                }
+                Student outStandingStudent = students[studentIndex];
+                students = remainingStudents;
+                studentCount = remainingStudents.length;
+                return outStandingStudent;
+            } else {
+                throw new IneligibleForGraduationException("Student with id: "+ students[studentIndex].getId() + " is not outstanding yet." );
+            }
         } else {
-            throw new CourseLimitException("Student course limit reached.");
+            throw new StudentNotFoundException("Such an exceptional student does not exist reason: "+" University only has - "+ studentCount+ " students.");
         }
     }
 }
